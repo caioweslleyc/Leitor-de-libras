@@ -1,7 +1,5 @@
 # Leitor de Libras (versão intermediária)
 
-Câmera no navegador → MediaPipe acha 21 pontos da mão → Flask + scikit-learn dizem qual gesto é → palavra na tela.
-
 ## Rodar
 ```powershell
 py -3.12 -m venv .venv
@@ -9,7 +7,6 @@ py -3.12 -m venv .venv
 python -m pip install -r requirements.txt
 python app.py
 ```
-Abra http://127.0.0.1:5000 (precisa de internet: o MediaPipe é baixado de um CDN).
 
 ## Usar
 1. **Abrir câmera**.
@@ -22,5 +19,3 @@ Abra http://127.0.0.1:5000 (precisa de internet: o MediaPipe é baixado de um CD
 - `templates/index.html` – página
 - `static/style.css` – visual
 - `static/app.js` – câmera, MediaPipe, gravação e reconhecimento
-
-Troque `GITHUB_URL` no começo do `app.py` pelo link do repositório.
