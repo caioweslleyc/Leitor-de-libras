@@ -1,0 +1,102 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Leitor de Libras</title>
+
+    <style>
+        body {
+            background: #202020;
+            color: white;
+            font-family: Arial;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 30px;
+        }
+
+        img {
+            width: 800px;
+            max-width: 90%;
+            border: 3px solid white;
+            border-radius: 10px;
+        }
+
+        #gesto {
+            font-size: 35px;
+            color: #00ff80;
+            margin: 20px;
+        }
+
+        input, button {
+            padding: 12px;
+            margin: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Leitor de Libras</h1>
+
+    <img src="/video" alt="Câmera">
+
+    <div id="gesto">Faça um gesto...</div>
+
+    <h2>Cadastrar gesto</h2>
+
+    <input
+        type="text"
+        id="nome"
+        placeholder="Nome do gesto"
+    >
+
+    <button onclick="salvarGesto()">
+        Salvar gesto
+    </button>
+
+    <p id="mensagem"></p>
+
+    <script>
+        async function atualizarGesto() {
+            const resposta = await fetch("/estado");
+            const dados = await resposta.json();
+
+            document.getElementById("gesto").innerText =
+                dados.gesto || "Faça um gesto...";
+        }
+
+        async function salvarGesto() {
+            const nome = document.getElementById("nome").value;
+
+            const resposta = await fetch("/salvar", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ nome: nome })
+            });
+
+            const dados = await resposta.json();
+
+            document.getElementById("mensagem").innerText =
+                dados.mensagem;
+
+            if (resposta.ok) {
+                document.getElementById("nome").value = "";
+            }
+        }
+
+        setInterval(atualizarGesto, 200);
+    </script>
+
+</body>
+</html>
