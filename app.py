@@ -1,13 +1,17 @@
-
 import cv2
 import time
 import threading
 
 from flask import Flask, render_template, Response, jsonify, request
 
-from detector import DetectorMaos
-from desenho import desenhar_maos
-from banco import criar_banco, salvar_sinal, carregar_sinais, identificar_gesto
+from leitor.detector import DetectorMaos
+from leitor.desenho import desenhar_maos
+from leitor.banco import (
+    criar_banco,
+    salvar_sinal,
+    carregar_sinais,
+    identificar_gesto
+)
 
 app = Flask(__name__)
 
@@ -40,10 +44,10 @@ def processar_camera():
         sucesso, frame = camera.read()
 
         if not sucesso:
+            time.sleep(0.1)
             continue
 
         frame = cv2.flip(frame, 1)
-
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         timestamp = int((time.monotonic() - inicio) * 1000)
@@ -51,9 +55,7 @@ def processar_camera():
         ultimo_timestamp = timestamp
 
         resultado = detector.detectar(rgb, timestamp)
-
         frame = desenhar_maos(frame, resultado)
-
         gesto = identificar_gesto(resultado, sinais)
 
         if gesto:
@@ -83,6 +85,7 @@ def inicio():
 
 @app.route("/video")
 def video():
+
     def gerar():
         while True:
             with lock:
@@ -105,6 +108,7 @@ def video():
 
 @app.route("/estado")
 def estado():
+
     with lock:
         return jsonify({"gesto": gesto_atual})
 
@@ -117,13 +121,17 @@ def salvar():
     nome = dados.get("nome", "").strip()
 
     if not nome:
-        return jsonify({"mensagem": "Digite o nome do gesto."}), 400
+        return jsonify({
+            "mensagem": "Digite o nome do gesto."
+        }), 400
 
     with lock:
         resultado = resultado_atual
 
         if resultado is None or not resultado.hand_landmarks:
-            return jsonify({"mensagem": "Nenhuma mão detectada."}), 400
+            return jsonify({
+                "mensagem": "Nenhuma mão detectada."
+            }), 400
 
         sucesso = salvar_sinal(nome, resultado)
 
@@ -131,7 +139,9 @@ def salvar():
             sinais = carregar_sinais()
 
     if sucesso:
-        return jsonify({"mensagem": "Gesto salvo com sucesso!"})
+        return jsonify({
+            "mensagem": "Gesto salvo com sucesso!"
+        })
 
     return jsonify({
         "mensagem": "Gesto muito parecido com outro já cadastrado."
@@ -139,13 +149,21 @@ def salvar():
 
 
 if __name__ == "__main__":
+
     threading.Thread(
         target=processar_camera,
         daemon=True
     ).start()
 
     try:
-        app.run(host="127.0.0.1", port=5000, debug=False)
+        app.run(
+            host="127.0.0.1",
+            port=5000,
+            debug=False,
+            use_reloader=False
+        )
+
     finally:
         camera.release()
         detector.fechar()
+        cv2.destroyAllWindows()
